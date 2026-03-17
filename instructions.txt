@@ -1,0 +1,27 @@
+How to Build and Run the Multithreaded Sorting Application
+==========================================================
+
+Prerequisites: FIU Ocelot server (or any Linux/UNIX system with gcc and pthreads)
+
+1. Copy the project files to the Ocelot server:
+   scp sort.c Makefile readme.txt instructions.txt <panther_id>@ocelot.aul.fiu.edu:~/
+
+2. SSH into the Ocelot server:
+   ssh <panther_id>@ocelot.aul.fiu.edu
+
+3. Compile the program:
+   make
+
+4. Run the program:
+   ./sort
+
+5. Expected output:
+   Original array: 7, 12, 19, 3, 18, 4, 2, 6, 15, 8
+   Sorting thread: sorting 5 elements starting at index 0
+   Sorting thread: sorting 5 elements starting at index 5
+   After sorting:  3, 7, 12, 18, 19, 2, 4, 6, 8, 15
+   Merge thread: merging first 5 and last 5 elements into result[]
+   Sorted array:   2, 3, 4, 6, 7, 8, 12, 15, 18, 19
+
+6. To clean up compiled files:
+   make clean
