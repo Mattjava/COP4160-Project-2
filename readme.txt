@@ -1,4 +1,4 @@
-- Authors --
+-- Authors --
 Matthew Fortes (6415687)
 Kyle Quesada (5879334)
 Lenz Belias (6541154)
