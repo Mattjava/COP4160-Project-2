@@ -4,118 +4,86 @@
 #include<time.h>
 #define frand() (rand()/(double)RAND_MAX)
 #define nrand() (sqrt(-2*log(frand()))*cos(2*M_PI*frand()))
-double avg_utilization = 0;
-int number_of_examined_holes = 0;
-int head = 0;//head of the linked list of holes
-int current_hole = 0;
-void initialize(int n, int d, int v, int** mem, int**blocks){
-  srand(time(NULL));
-  int max_blocks = n/(d-v);//why?!
-  *mem = (int*)malloc(sizeof(int)*n);
-  (*mem)[0] = (*mem)[n-1] = -n+2;
-  (*mem)[1] = (*mem)[2] = 0;
-  *blocks = (int*)malloc(max_blocks*sizeof(int));
-}
-int nrand_gen(int d, double v, int n){
-  double rv;
-  do{
-    rv=  nrand() * v + d;//use rand function here
-    }while(rv < 3 || rv > n-4);
-    return rv;
-  
-}
-int request(int* blocks, int* block_count, int* mem, int d, double v, int n){
-  if(head == -1)//no hole is found!
-    return 0;
-  int size = nrand_gen(d, v, n);
-  int iterator = head, pred, succ, new_size, block_address;
-  while(size > -mem[iterator]){
-    number_of_examined_holes++;
-    iterator = mem[iterator + 2];//iterator = iterator->next
-    if(head == iterator)
-      return 0;//unsuccessful
-  }
-  if(abs(size+mem[iterator]) <= 4){//fill completely
-    //request size is almost equal to the hole size
-    size = -mem[iterator];//block fills hole completely
-    mem[iterator] = mem[iterator + size + 1] = size;
-    //delete the current hole since it is full now
-    pred = mem[iterator+1];
-    succ = mem[iterator+2];
-    if (pred == iterator)//current hole is the only hole
-      head = -1;
-    else{
-      mem[pred+2] = succ;//current->prev->next = current->next
-      mem[succ+1] = pred;//current->next->prev = current->prev 
-    }
-    block_address = iterator;
-  }else{//fill partially
-    mem[iterator] += (size+2);
-    //adding pos by neg to make it less negative
-    new_size = -mem[iterator];
-    mem[iterator + new_size + 1] = mem[iterator];
-    //block starts at iterator + new_size + 2
-    block_address = iterator + new_size + 2;
-    mem[block_address] = 
-      mem[block_address + size + 1] = size;
-  }
-  blocks[*block_count] = block_address;
-  (*block_count)++;
-  return 1;//successful
-}
-void release(int* blocks, int* block_count, int* mem){
-  if(!*block_count)
-    return;
-  int to_be_released = rand()%(*block_count);
-  printf("releasing block at location (address) %d\n", blocks[to_be_released]);
 
-  //remove an integer at index to_be_released from blocks array...
-  blocks[to_be_released] = blocks[(*block_count)-1];
-  (*block_count)--;
-}
-void update_memory_utilization(int* blocks, int block_count, int* mem, int n, int x){
-  double utilization = 0;
-  for(int i = 0;i < block_count;i++)
-    utilization += mem[blocks[i]];
-  utilization /= n;
-  //printf("%f\t",utilization);
-  avg_utilization += utilization/x;
-}
-int main(int argc, char** argv) {
-  int x,n,d;
-  double v;
-  while(*++argv){
-    //./main -x 1000 -n 16000000 -d 1000000 -v 256000
-    if(**argv != '-')
-      return 1;
-    switch((*argv)[1]){
-      case 'x':
-      x = atoi(*++argv);
-      break;
-      case 'n':
-      n = atoi(*++argv);
-      break;
-      case 'd':
-      d = atoi(*++argv);
-      break;
-      case 'v':
-      v = atof(*++argv);
-      break;
-      default: //error
-      return 1;
+int* merge(int* segment1, int* segment2, int size1, int size2) {
+    int size3 = size1 + size2;
+
+    int point1 = 0;
+    int point2 = 0;
+
+    int point3 = 0;
+
+    int* result = (int*) malloc(size3 * sizeof(int));
+
+    while(point1 < size1 && point2 < size2) {
+        if(segment1[point1] < segment2[point2]) {
+            result[point3] = segment1[point1];
+            point1 += 1;
+        } else {
+            result[point3] = segment2[point2];
+            point2 += 1;
+        }
+
+        point3 += 1;
     }
-  }
-  int* mem;//the memory
-  int* blocks;
-  int block_count = 0;
-  printf("Running the simulation with x=%d n=%d d=%d v=%.2f\n", x,n,d,v);
-  initialize(n, d, v, &mem, &blocks);
-  while(x > 0){
-    x--;
-    while(request(blocks, &block_count, mem, d, v, n));
-    update_memory_utilization(blocks, block_count, mem, n, x);
-    release(blocks,&block_count,mem);
-  }
-  printf("avg utilization is %.3f", avg_utilization);
-  return 0;
+
+    while(point1 < size1) {
+        result[point3] = segment1[point1];
+        point1 += 1;
+        point3 += 1;
+    }
+
+    while(point2 < size2) {
+        result[point3] = segment2[point2];
+        point2 += 1;
+        point3 += 1;
+    }
+
+    return result;
+
 }
+
+/*
+    Based off of the merge sort algorithm
+    Make sure the input array is dynamically allocated to ensure the the code runs smoothly.
+*/
+int* mergeSort(int* arr, int size) {
+    if (size < 2) {
+        int* result = malloc(size * sizeof(int));
+        for(int i = 0; i < size; i++) {
+            result[i] = arr[i];
+        }
+        return result;
+    }
+
+    int half = size / 2;
+
+    int* segment1 = (int*) malloc(half * sizeof(int));
+    int* segment2 = (int*) malloc((size - half) * sizeof(int));
+
+    int point1 = 0;
+    int point2 = 0;
+
+    for(int i = 0; i < size; i++) {
+        if(point1 < half) {
+            segment1[point1] = arr[i];
+            point1 += 1;
+        } else {
+            segment2[point2] = arr[i];
+            point2 += 1;
+        }
+    }
+
+    int* sorted1 = mergeSort(segment1, half);
+    int* sorted2 = mergeSort(segment2, size - half);
+
+    free(segment1);
+    free(segment2);
+
+    int* result = merge(sorted1, sorted2, half, size - half);
+
+    free(sorted1);
+    free(sorted2);
+
+    return result;
+  }
