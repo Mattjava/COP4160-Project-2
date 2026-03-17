@@ -36,6 +36,10 @@ int* merge(int* segment1, int* segment2, int size1, int size2) {
 
 }
 
+/*
+    Based off of the merge sort algorithm
+    Make sure the input array is dynamically allocated to ensure the the code runs smoothly.
+*/
 int* mergeSort(int* arr, int size) {
     if (size < 2) {
         int* result = malloc(size * sizeof(int));
